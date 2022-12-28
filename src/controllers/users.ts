@@ -13,4 +13,13 @@ export const createUser: RequestHandler = (req: { body: { id: string, name: stri
 
 export const getUsers: RequestHandler = (req, res, next) => {
     res.status(200).json({ users: USERS });
+};
+
+export const getUser: RequestHandler<{ id: string }> = (req, res, next) => {
+    const userId = req.params.id;
+    const userIndex = USERS.findIndex(user => user.id === userId)
+    if (userIndex < 0) {
+        throw new Error(`Could not find user with id: ${userId}`)
+    }
+    res.status(200).json({ user: USERS[userIndex] });
 }; 
