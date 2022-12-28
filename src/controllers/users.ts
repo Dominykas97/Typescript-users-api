@@ -55,8 +55,33 @@ export const createUser: RequestHandler = (req: { body: User }, res) => {
     }
 };
 
-export const getUsers: RequestHandler = (req, res) => {
-    res.status(200).json({ users: USERS });
+
+export const getUsers: RequestHandler<{ age: number, type: string, role: string, occupation: string }> = (req, res) => {
+    let filteredUsers = USERS;
+    console.log(req.query)
+    const age = req.query.age;
+    if (age) {
+        filteredUsers = filteredUsers.filter(user => user.age === +age)
+    }
+    const type = req.query.type;
+    if (type) {
+        filteredUsers = filteredUsers.filter(user => user.type === type)
+    }
+    const role = req.query.role;
+    if (role) {
+        filteredUsers = filteredUsers.filter(user =>
+            (user.type === USER_TYPE.ADMIN && (user as Admin).role === role) ||
+            (user.type === USER_TYPE.POWERUSER && (user as PowerUser).role === role)
+        )
+    }
+    const occupation = req.query.occupation;
+    if (occupation) {
+        filteredUsers = filteredUsers.filter(user =>
+            (user.type === USER_TYPE.EMPLOYEE && (user as Employee).occupation === occupation) ||
+            (user.type === USER_TYPE.POWERUSER && (user as PowerUser).occupation === occupation)
+        )
+    }
+    res.status(200).json({ users: filteredUsers });
 };
 
 export const getUser: RequestHandler<{ id: string }> = (req, res) => {
