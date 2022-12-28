@@ -1,26 +1,57 @@
 import { RequestHandler } from "express";
-import { User, USER_TYPE } from '../models/users';
+import { Admin, Employee, PowerUser, User, USER_TYPE } from '../models/users';
 const USERS: User[] = [];
+
 
 export const createUser: RequestHandler = (req: { body: User }, res) => {
     const name = req.body.name;
     const age = req.body.age;
     const type = req.body.type;
+    let newUser: User | undefined;
     if (name && age && type) {
         if (typeof (name) !== "string") {
-            throw new Error(`Name is not a string`);
+            throw new Error(`name is not a string`);
         }
         if (typeof (age) !== "number") {
-            throw new Error(`Age is not a number`);
+            throw new Error(`age is not a number`);
         }
         if (!Object.values(USER_TYPE).includes(type as USER_TYPE)) {
-            throw new Error(`Type is invalid`);
+            throw new Error(`type is invalid`);
         }
-        const newUser = new User(name, age, type);
-        USERS.push(newUser);
-        res.status(200).json({ message: 'Created a new user', createdUser: newUser });
+        if (type === USER_TYPE.ADMIN) {
+            const role = (req.body as Admin).role;
+            if (role) {
+                newUser = new Admin(name, age, type, role);
+            } else {
+                throw new Error(`role is missing for admin`);
+            }
+        }
+        if (type === USER_TYPE.EMPLOYEE) {
+            const occupation = (req.body as Employee).occupation;
+            if (occupation) {
+                newUser = new Admin(name, age, type, occupation);
+            } else {
+                throw new Error(`occupation is missing for employee`);
+            }
+        }
+        if (type === USER_TYPE.POWERUSER) {
+            const role = (req.body as PowerUser).role;
+            const occupation = (req.body as PowerUser).occupation;
+            if (role && occupation) {
+                newUser = new PowerUser(name, age, type, role, occupation);
+            } else {
+                throw new Error(`role and/or occupation is missing for poweruser`);
+            }
+        }
+
+        if (newUser) {
+            USERS.push(newUser);
+            res.status(200).json({ message: 'Created a new user', createdUser: newUser });
+        } else {
+            throw new Error(`Could not create a new user`)
+        }
     } else {
-        throw new Error(`Could not create a new user`)
+        throw new Error(`Could not create a new user: name, age, and/or type missing`)
     }
 };
 
