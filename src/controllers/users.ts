@@ -1,13 +1,22 @@
-import e, { RequestHandler } from "express";
+import { RequestHandler } from "express";
 import { User } from '../models/users';
 const USERS: User[] = [];
 
-export const createUser: RequestHandler = (req: { body: { name: string, age: number, role: string } }, res) => {
+export const createUser: RequestHandler = (req: { body: User }, res) => {
     const name = req.body.name;
     const age = req.body.age;
     const role = req.body.role;
     console.log(age);
     if (name && age && role) {
+        if (typeof (name) !== "string") {
+            throw new Error(`Name is not a string`);
+        }
+        if (typeof (age) !== "number") {
+            throw new Error(`Age is not a number`);
+        }
+        // if (typeof (role) !== "string") {
+        //     throw new Error(`Role is not a number`);
+        // }
         const newUser = new User(name, age, role);
         USERS.push(newUser);
         res.status(200).json({ message: 'Created a new user', createdUser: newUser });
