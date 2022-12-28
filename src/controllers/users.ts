@@ -1,14 +1,19 @@
-import { RequestHandler } from "express";
+import e, { RequestHandler } from "express";
 import { User } from '../models/users';
 const USERS: User[] = [];
 
-export const createUser: RequestHandler = (req: { body: { id: string, name: string, role: string } }, res) => {
-    const id = req.body.id;
+export const createUser: RequestHandler = (req: { body: { name: string, age: number, role: string } }, res) => {
     const name = req.body.name;
+    const age = req.body.age;
     const role = req.body.role;
-    const newUser = new User(id, name, role);
-    USERS.push(newUser);
-    res.status(200).json({ message: 'Created a new user', createdUser: newUser });
+    console.log(age);
+    if (name && age && role) {
+        const newUser = new User(name, age, role);
+        USERS.push(newUser);
+        res.status(200).json({ message: 'Created a new user', createdUser: newUser });
+    } else {
+        throw new Error(`Could not create a new user`)
+    }
 };
 
 export const getUsers: RequestHandler = (req, res) => {
