@@ -2,7 +2,7 @@ import { RequestHandler } from "express";
 import { User } from '../models/users';
 const USERS: User[] = [];
 
-export const createUser: RequestHandler = (req: { body: { id: string, name: string, role: string } }, res, next) => {
+export const createUser: RequestHandler = (req: { body: { id: string, name: string, role: string } }, res) => {
     const id = req.body.id;
     const name = req.body.name;
     const role = req.body.role;
@@ -11,11 +11,11 @@ export const createUser: RequestHandler = (req: { body: { id: string, name: stri
     res.status(200).json({ message: 'Created a new user', createdUser: newUser });
 };
 
-export const getUsers: RequestHandler = (req, res, next) => {
+export const getUsers: RequestHandler = (req, res) => {
     res.status(200).json({ users: USERS });
 };
 
-export const getUser: RequestHandler<{ id: string }> = (req, res, next) => {
+export const getUser: RequestHandler<{ id: string }> = (req, res) => {
     const userId = req.params.id;
     const userIndex = USERS.findIndex(user => user.id === userId)
     if (userIndex < 0) {
@@ -24,7 +24,7 @@ export const getUser: RequestHandler<{ id: string }> = (req, res, next) => {
     res.status(200).json({ user: USERS[userIndex] });
 };
 
-export const deleteUser: RequestHandler<{ id: string }> = (req, res, next) => {
+export const deleteUser: RequestHandler<{ id: string }> = (req, res) => {
     const userId = req.params.id;
     const userIndex = USERS.findIndex(user => user.id === userId)
     if (userIndex < 0) {
