@@ -1,13 +1,14 @@
-import { defaultMaxListeners } from "events";
 import { Router } from "express";
+
+import { createUser, getUsers } from "../controllers/users";
 
 const router = Router()
 
-router.get('/');
+router.get('/', getUsers);
 
 router.get('/:id');
 
-router.post('/');
+router.post('/', createUser);
 
 router.delete('/:id');
 
