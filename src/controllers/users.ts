@@ -19,7 +19,7 @@ export const createUser: RequestHandler = (req: { body: User }, res) => {
             throw new Error(`type is invalid`);
         }
         if (type === USER_TYPE.ADMIN) {
-            const role = (req.body as Admin).role;
+            const role = String((req.body as Admin).role);
             if (role) {
                 newUser = new Admin(name, age, type, role);
             } else {
@@ -27,7 +27,7 @@ export const createUser: RequestHandler = (req: { body: User }, res) => {
             }
         }
         if (type === USER_TYPE.EMPLOYEE) {
-            const occupation = (req.body as Employee).occupation;
+            const occupation = String((req.body as Employee).occupation);
             if (occupation) {
                 newUser = new Admin(name, age, type, occupation);
             } else {
@@ -35,8 +35,8 @@ export const createUser: RequestHandler = (req: { body: User }, res) => {
             }
         }
         if (type === USER_TYPE.POWERUSER) {
-            const role = (req.body as PowerUser).role;
-            const occupation = (req.body as PowerUser).occupation;
+            const role = String((req.body as PowerUser).role);
+            const occupation = String((req.body as PowerUser).occupation);
             if (role && occupation) {
                 newUser = new PowerUser(name, age, type, role, occupation);
             } else {
@@ -56,12 +56,12 @@ export const createUser: RequestHandler = (req: { body: User }, res) => {
 };
 
 
-export const getUsers: RequestHandler<{ age: number, type: string, role: string, occupation: string }> = (req, res) => {
+export const getUsers: RequestHandler = (req: { query: { age?: string, type?: string, role?: string, occupation?: string } }, res) => {
     let filteredUsers = USERS;
-    console.log(req.query)
-    const age = req.query.age;
+    console.log(req.query);
+    const age = parseInt(req.query.age as string);
     if (age) {
-        filteredUsers = filteredUsers.filter(user => user.age === +age)
+        filteredUsers = filteredUsers.filter(user => user.age === age)
     }
     const type = req.query.type;
     if (type) {
