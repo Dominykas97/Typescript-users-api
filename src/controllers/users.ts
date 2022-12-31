@@ -16,7 +16,8 @@ export const createUser: RequestHandler = (req: { body: User }, res) => {
             throw new Error(`age is not a number`);
         }
         if (!Object.values(USER_TYPE).includes(type as USER_TYPE)) {
-            throw new Error(`type is invalid`);
+            const availableTypesNoQuotes = JSON.parse(JSON.stringify(Object.values(USER_TYPE)).replace(/&quot;/g, '"'));
+            throw new Error(`type is invalid. Available types: ${availableTypesNoQuotes}`);
         }
         if (type === USER_TYPE.ADMIN) {
             const role = String((req.body as Admin).role);
