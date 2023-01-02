@@ -1,6 +1,7 @@
 import { RequestHandler } from "express";
 import { Admin, Employee, PowerUser, User, USER_TYPE } from '../models/users';
 import { db } from "../db";
+import { OkPacket, ResultSetHeader, RowDataPacket } from "mysql2";
 const USERS: User[] = [];
 
 
@@ -100,12 +101,15 @@ export const getUser: RequestHandler<{ id: string }> = (req, res, next) => {
 
 };
 
-export const deleteUser: RequestHandler<{ id: string }> = (req, res) => {
+export const deleteUser: RequestHandler<{ id: string }> = (req, res, next) => {
     const userId = req.params.id;
-    const userIndex = USERS.findIndex(user => user.id === userId)
-    if (userIndex < 0) {
-        throw new Error(`Could not find user with id: ${userId}`)
-    }
-    USERS.splice(userIndex, 1)
-    return res.status(200).json({ message: "User deleted" });
+    const queryString = `DELETE FROM users where id = ${userId}`;
+    db.query(queryString, (err, result: ResultSetHeader) => {
+        if (err) { return next({ err: err.message }); }
+        if (result.affectedRows < 1) {
+            return res.status(400).json({ err: `Could not find user with id: ${userId}` });
+        }
+        return res.status(200).json({ message: "User deleted" });
+    });
+
 }; 
