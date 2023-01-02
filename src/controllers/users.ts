@@ -1,5 +1,6 @@
 import { RequestHandler } from "express";
 import { Admin, Employee, PowerUser, User, USER_TYPE } from '../models/users';
+import { db } from "../db";
 const USERS: User[] = [];
 
 
@@ -85,13 +86,18 @@ export const getUsers: RequestHandler = (req: { query: { age?: string, type?: st
     return res.status(200).json({ users: filteredUsers });
 };
 
-export const getUser: RequestHandler<{ id: string }> = (req, res) => {
+export const getUser: RequestHandler<{ id: string }> = (req, res, next) => {
     const userId = req.params.id;
-    const userIndex = USERS.findIndex(user => user.id === userId)
-    if (userIndex < 0) {
-        throw new Error(`Could not find user with id: ${userId}`)
-    }
-    return res.status(200).json({ user: USERS[userIndex] });
+    const queryString = `SELECT * FROM users where id = ${userId}`;
+    db.query(queryString, (err, result: User[]) => {
+        if (err) { return next({ err: err.message }); }
+        if (result.length < 1) {
+            return res.status(400).json({ err: `Could not find user with id: ${userId}` });
+        }
+        const user = result[0];
+        return res.status(200).json({ user: user });
+    });
+
 };
 
 export const deleteUser: RequestHandler<{ id: string }> = (req, res) => {
