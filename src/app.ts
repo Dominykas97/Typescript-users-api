@@ -9,7 +9,7 @@ app.use(function (req: express.Request, res: express.Response, next: express.Nex
     next({ status: 404 });
 });
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// eslint-disable-next-line
 app.use(function (err: any, req: express.Request, res: express.Response, next: express.NextFunction) {
     console.error(err);
     res.status(err.status || 500).json({ err: err.message });
