@@ -81,7 +81,7 @@ export const getUsers: RequestHandler = (req: { query: { age?: string, type?: st
         if (result.length < 1) {
             return res.status(400).json({ err: `Could not find users` });
         }
-        const cleanUsers = result.map(name => cleanUserFromNullValues(name));
+        const cleanUsers = result.map(name => cleanUserFromNullValues<user>(name));
         return res.status(200).json({ users: cleanUsers });
     });
 };
@@ -94,7 +94,7 @@ export const getUser: RequestHandler<{ id: string }> = (req, res, next) => {
         if (result.length < 1) {
             return res.status(400).json({ err: `Could not find user with id: ${userId}` });
         }
-        const user = cleanUserFromNullValues(result[0]);
+        const user = cleanUserFromNullValues<user>(result[0]);
         return res.status(200).json({ user: user });
     });
 };
@@ -111,4 +111,4 @@ export const deleteUser: RequestHandler<{ id: string }> = (req, res, next) => {
     });
 };
 
-const cleanUserFromNullValues = (object: object) => JSON.parse(JSON.stringify(object, (_, value) => value ?? undefined));
+const cleanUserFromNullValues = <T>(object: object): T => JSON.parse(JSON.stringify(object, (_, value) => value ?? undefined));
