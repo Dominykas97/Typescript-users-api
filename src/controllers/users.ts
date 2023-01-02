@@ -2,7 +2,6 @@ import { RequestHandler } from "express";
 import { Admin, Employee, PowerUser, User, USER_TYPE } from '../models/users';
 import { db } from "../db";
 import { ResultSetHeader } from "mysql2";
-const USERS: User[] = [];
 
 export const createUser: RequestHandler = (req: { body: User }, res, next) => {
     const name = req.body.name;
@@ -53,33 +52,37 @@ export const createUser: RequestHandler = (req: { body: User }, res, next) => {
     });
 };
 
-
-export const getUsers: RequestHandler = (req: { query: { age?: string, type?: string, role?: string, occupation?: string } }, res) => {
-    let filteredUsers = USERS;
+export const getUsers: RequestHandler = (req: { query: { age?: string, type?: string, role?: string, occupation?: string } }, res, next) => {
     console.log(req.query);
+    let queryString = `SELECT * FROM users`;
+    const optionalParameters: string[] = [];
     const age = parseInt(req.query.age as string);
     if (age) {
-        filteredUsers = filteredUsers.filter(user => user.age === age)
+        optionalParameters.push(`age=${age}`);
     }
     const type = req.query.type;
     if (type) {
-        filteredUsers = filteredUsers.filter(user => user.type === type)
+        optionalParameters.push(`type="${type}"`);
     }
     const role = req.query.role;
     if (role) {
-        filteredUsers = filteredUsers.filter(user =>
-            (user.type === USER_TYPE.ADMIN && (user as Admin).role === role) ||
-            (user.type === USER_TYPE.POWERUSER && (user as PowerUser).role === role)
-        )
+        optionalParameters.push(`role=${role}`);
     }
     const occupation = req.query.occupation;
     if (occupation) {
-        filteredUsers = filteredUsers.filter(user =>
-            (user.type === USER_TYPE.EMPLOYEE && (user as Employee).occupation === occupation) ||
-            (user.type === USER_TYPE.POWERUSER && (user as PowerUser).occupation === occupation)
-        )
+        optionalParameters.push(`occupation=${occupation}`);
     }
-    return res.status(200).json({ users: filteredUsers });
+    if (optionalParameters.length > 0) {
+        queryString += ' WHERE ' + optionalParameters.join(' AND ');
+    }
+    console.log(queryString);
+    db.query(queryString, (err, result: User[]) => {
+        if (err) { return next({ err: err.message }); }
+        if (result.length < 1) {
+            return res.status(400).json({ err: `Could not find users` });
+        }
+        return res.status(200).json({ users: result });
+    });
 };
 
 export const getUser: RequestHandler<{ id: string }> = (req, res, next) => {
@@ -93,7 +96,6 @@ export const getUser: RequestHandler<{ id: string }> = (req, res, next) => {
         const user = result[0];
         return res.status(200).json({ user: user });
     });
-
 };
 
 export const deleteUser: RequestHandler<{ id: string }> = (req, res, next) => {
@@ -106,5 +108,4 @@ export const deleteUser: RequestHandler<{ id: string }> = (req, res, next) => {
         }
         return res.status(200).json({ message: "User deleted" });
     });
-
 }; 
