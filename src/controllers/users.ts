@@ -1,9 +1,9 @@
 import { RequestHandler } from "express";
-import { Admin, Employee, PowerUser, User, USER_TYPE } from '../models/users';
+import { admin, employee, poweruser, user, USER_TYPE } from '../models/users';
 import { db } from "../db";
 import { ResultSetHeader } from "mysql2";
 
-export const createUser: RequestHandler = (req: { body: User }, res, next) => {
+export const createUser: RequestHandler = (req: { body: user }, res, next) => {
     const name = req.body.name;
     const age = req.body.age;
     const type = req.body.type;
@@ -22,22 +22,22 @@ export const createUser: RequestHandler = (req: { body: User }, res, next) => {
         return res.status(400).json({ err: `type is invalid. Available types: ${availableTypesNoQuotes}` });
     }
     else if (type === USER_TYPE.ADMIN) {
-        role = (req.body as Admin).role;
+        role = (req.body as admin).role;
         if (!role) {
             return res.status(400).json({ err: 'role is missing for admin' });
         }
     }
     else if (type === USER_TYPE.EMPLOYEE) {
-        occupation = (req.body as Employee).occupation;
+        occupation = (req.body as employee).occupation;
         if (!occupation) {
             return res.status(400).json({ err: 'occupation is missing for employee' });
         }
     }
     else if (type === USER_TYPE.POWERUSER) {
-        role = (req.body as PowerUser).role;
-        occupation = (req.body as PowerUser).occupation;
+        role = (req.body as poweruser).role;
+        occupation = (req.body as poweruser).occupation;
         if (!(role && occupation)) {
-            return res.status(400).json({ err: 'role and/or occupation is missing for poweruser' }).end();
+            return res.status(400).json({ err: 'role and/or occupation is missing for poweruser' });
         }
     }
     const queryString = `INSERT INTO users VALUES (NULL, "${name}", ${age}, "${type}", ${role ?? null}, ${occupation ?? null})`;
@@ -76,7 +76,7 @@ export const getUsers: RequestHandler = (req: { query: { age?: string, type?: st
         queryString += ' WHERE ' + optionalParameters.join(' AND ');
     }
     console.log(queryString);
-    db.query(queryString, (err, result: User[]) => {
+    db.query(queryString, (err, result: user[]) => {
         if (err) { return next({ err: err.message }); }
         if (result.length < 1) {
             return res.status(400).json({ err: `Could not find users` });
@@ -89,7 +89,7 @@ export const getUsers: RequestHandler = (req: { query: { age?: string, type?: st
 export const getUser: RequestHandler<{ id: string }> = (req, res, next) => {
     const userId = req.params.id;
     const queryString = `SELECT * FROM users where id = ${userId}`;
-    db.query(queryString, (err, result: User[]) => {
+    db.query(queryString, (err, result: user[]) => {
         if (err) { return next({ err: err.message }); }
         if (result.length < 1) {
             return res.status(400).json({ err: `Could not find user with id: ${userId}` });
