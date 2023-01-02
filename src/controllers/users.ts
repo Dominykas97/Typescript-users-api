@@ -10,49 +10,49 @@ export const createUser: RequestHandler = (req: { body: User }, res) => {
     let newUser: User | undefined;
     if (name && age && type) {
         if (typeof (name) !== "string") {
-            throw new Error(`name is not a string`);
+            return res.status(400).json({ err: 'name is not a string' });
         }
         if (typeof (age) !== "number") {
-            throw new Error(`age is not a number`);
+            return res.status(400).json({ err: 'age is not a number' });
         }
         if (!Object.values(USER_TYPE).includes(type as USER_TYPE)) {
             const availableTypesNoQuotes = JSON.parse(JSON.stringify(Object.values(USER_TYPE)).replace(/&quot;/g, '"'));
-            throw new Error(`type is invalid. Available types: ${availableTypesNoQuotes}`);
+            return res.status(400).json({ err: `type is invalid. Available types: ${availableTypesNoQuotes}` });
         }
         if (type === USER_TYPE.ADMIN) {
-            const role = String((req.body as Admin).role);
+            const role = (req.body as Admin).role;
             if (role) {
                 newUser = new Admin(name, age, type, role);
             } else {
-                throw new Error(`role is missing for admin`);
+                return res.status(400).json({ err: 'role is missing for admin' });
             }
         }
         if (type === USER_TYPE.EMPLOYEE) {
-            const occupation = String((req.body as Employee).occupation);
+            const occupation = (req.body as Employee).occupation;
             if (occupation) {
                 newUser = new Admin(name, age, type, occupation);
             } else {
-                throw new Error(`occupation is missing for employee`);
+                return res.status(400).json({ err: 'occupation is missing for employee' });
             }
         }
         if (type === USER_TYPE.POWERUSER) {
-            const role = String((req.body as PowerUser).role);
-            const occupation = String((req.body as PowerUser).occupation);
+            const role = (req.body as PowerUser).role;
+            const occupation = (req.body as PowerUser).occupation;
             if (role && occupation) {
                 newUser = new PowerUser(name, age, type, role, occupation);
             } else {
-                throw new Error(`role and/or occupation is missing for poweruser`);
+                return res.status(400).json({ err: 'role and/or occupation is missing for poweruser' }).end();
             }
         }
 
         if (newUser) {
             USERS.push(newUser);
-            res.status(200).json({ message: 'Created a new user', createdUser: newUser });
+            return res.status(200).json({ message: 'Created a new user', createdUser: newUser });
         } else {
-            throw new Error(`Could not create a new user`)
+            return res.status(500).json({ err: 'Could not create a new user' });
         }
     } else {
-        throw new Error(`Could not create a new user: name, age, and/or type missing`)
+        return res.status(400).json({ err: 'Could not create a new user: name, age, and/or type missing' });
     }
 };
 
@@ -82,7 +82,7 @@ export const getUsers: RequestHandler = (req: { query: { age?: string, type?: st
             (user.type === USER_TYPE.POWERUSER && (user as PowerUser).occupation === occupation)
         )
     }
-    res.status(200).json({ users: filteredUsers });
+    return res.status(200).json({ users: filteredUsers });
 };
 
 export const getUser: RequestHandler<{ id: string }> = (req, res) => {
@@ -91,7 +91,7 @@ export const getUser: RequestHandler<{ id: string }> = (req, res) => {
     if (userIndex < 0) {
         throw new Error(`Could not find user with id: ${userId}`)
     }
-    res.status(200).json({ user: USERS[userIndex] });
+    return res.status(200).json({ user: USERS[userIndex] });
 };
 
 export const deleteUser: RequestHandler<{ id: string }> = (req, res) => {
@@ -101,5 +101,5 @@ export const deleteUser: RequestHandler<{ id: string }> = (req, res) => {
         throw new Error(`Could not find user with id: ${userId}`)
     }
     USERS.splice(userIndex, 1)
-    res.status(200).json({ message: "User deleted" });
+    return res.status(200).json({ message: "User deleted" });
 }; 
