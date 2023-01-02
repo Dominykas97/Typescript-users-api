@@ -66,11 +66,11 @@ export const getUsers: RequestHandler = (req: { query: { age?: string, type?: st
     }
     const role = req.query.role;
     if (role) {
-        optionalParameters.push(`role=${role}`);
+        optionalParameters.push(`role="${role}"`);
     }
     const occupation = req.query.occupation;
     if (occupation) {
-        optionalParameters.push(`occupation=${occupation}`);
+        optionalParameters.push(`occupation="${occupation}"`);
     }
     if (optionalParameters.length > 0) {
         queryString += ' WHERE ' + optionalParameters.join(' AND ');
