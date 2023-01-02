@@ -6,6 +6,11 @@
 | /users/:id | Get    | None | Returns a User with matching unique identifier |
 | /users/:id | Delete | None |Removes a User (of any type) |
 
+To install, in terminal run: `npm install`
+
 To compile TypeScript to JavaScript, in terminal run: `tsc`
 
 To run the application, in terminal run: `npm run start`. The api will be accessible on `localhost:3000/users`
+
+
+There is `mysql` branch which stores data in mysql database.
