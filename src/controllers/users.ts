@@ -40,7 +40,7 @@ export const createUser: RequestHandler = (req: { body: User }, res, next) => {
             return res.status(400).json({ err: 'role and/or occupation is missing for poweruser' }).end();
         }
     }
-    const queryString = `INSERT INTO users VALUES (null, "${name}", ${age}, "${type}", "${role ?? "null"}", "${occupation ?? "null"}")`;
+    const queryString = `INSERT INTO users VALUES (NULL, "${name}", ${age}, "${type}", ${role ?? null}, ${occupation ?? null})`;
     console.log(queryString)
     db.query(queryString, (err, result: ResultSetHeader) => {
         console.log(result);
@@ -81,7 +81,8 @@ export const getUsers: RequestHandler = (req: { query: { age?: string, type?: st
         if (result.length < 1) {
             return res.status(400).json({ err: `Could not find users` });
         }
-        return res.status(200).json({ users: result });
+        const cleanUsers = result.map(name => cleanUserFromNullValues(name));
+        return res.status(200).json({ users: cleanUsers });
     });
 };
 
@@ -93,7 +94,7 @@ export const getUser: RequestHandler<{ id: string }> = (req, res, next) => {
         if (result.length < 1) {
             return res.status(400).json({ err: `Could not find user with id: ${userId}` });
         }
-        const user = result[0];
+        const user = cleanUserFromNullValues(result[0]);
         return res.status(200).json({ user: user });
     });
 };
@@ -108,4 +109,6 @@ export const deleteUser: RequestHandler<{ id: string }> = (req, res, next) => {
         }
         return res.status(200).json({ message: "User deleted" });
     });
-}; 
+};
+
+const cleanUserFromNullValues = (object: object) => JSON.parse(JSON.stringify(object, (_, value) => value ?? undefined));
